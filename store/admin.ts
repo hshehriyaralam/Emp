@@ -1,0 +1,86 @@
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+
+
+export const adminApi = createApi({
+  reducerPath: "adminApi",
+
+  baseQuery: fetchBaseQuery({
+    baseUrl: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api`,
+    credentials: "include",
+  }),
+  tagTypes: ["Admin"],
+
+  endpoints: (builder) => ({
+    registerAdmin: builder.mutation({
+      query: (userData) => ({
+        url: "/register-Admin",
+        method: "POST",
+        body: userData,
+      }),
+      invalidatesTags: ["Admin"],
+    }),
+
+
+    // verified OTP
+   verfiyAdminOTP: builder.mutation({
+    query: (data) => ({
+      url: "/verified-otp-admin",
+      method: "POST",
+      body: data,
+    }),
+  }),
+
+    loginAdmin: builder.mutation({
+      query: (loginData) => ({
+        url: "/login-Admin",
+        method: "POST",
+        body: loginData,
+      }),
+      invalidatesTags: ["Admin"],
+    }),
+
+    logOutAdmin: builder.mutation<void, void>({
+      query: () => ({
+        url: "/logout-Admin",
+        method: "POST",
+      }),
+      invalidatesTags: ["Admin"],
+    }),
+
+
+    // get All admins
+    getAdmins: builder.query({
+      query: () => "/admins",
+    }),
+
+
+    // get Profile
+    AdminProfile: builder.query({
+      query: () => "/admin-profile",
+    }),
+
+
+
+    // chnage Profile Image  
+      updateProfileImg: builder.mutation({
+      query: (image) => ({
+        url: "/update-profile-image",
+        method: "PUT",
+        body: image,
+      }),
+      invalidatesTags: ["Admin"],
+    }),
+  }),
+});
+
+
+
+export const {
+  useRegisterAdminMutation,
+  useLoginAdminMutation,
+  useLogOutAdminMutation,
+  useGetAdminsQuery,
+  useAdminProfileQuery,
+  useUpdateProfileImgMutation,
+  useVerfiyAdminOTPMutation
+} = adminApi;
