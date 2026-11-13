@@ -1,22 +1,16 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
-export default async function AdminLayout({
+export default async function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
+  // const cookieStore = await cookies();
+  // const token = cookieStore.get("adminToken")?.value;
 
-  // const adminToken = cookieStore.get("adminToken")?.value;
-  // const employeeToken = cookieStore.get("employeeToken")?.value;
-  // if (!adminToken) {
-  //   redirect("/admin-login");
-  // }
-
-  
-  // if (employeeToken) {
-  //   redirect("/employee-dashboard");
+  // if (token) {
+  //   redirect("/admin-dashboard");
   // }
 
   return <>{children}</>;

@@ -1,14 +1,20 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
+"use client"
+import { useLoginAdminMutation } from "@/store/admin";
+import dynamic from "next/dynamic";
+const  LoginForm = dynamic(() => import('@/components/adminAuth/loginFrom'))
 
-export default async function Home() {
-  const cookieStore = await cookies();
+const Login = () => {
+const [loginUser] = useLoginAdminMutation()
+  return (
+ <div>
+  <LoginForm 
+  loginUser={loginUser}
+  navigation={'/admin-dashboard'}
+  singUpLink={'/admin-register'}
+  heading={'Admin'}
+  />
+ </div>
+  );
+};
 
-  const token = cookieStore.get("employeeToken")?.value;
-
-  if (token) {
-    redirect("/employee-dashboard");
-  }
-
-  redirect("/login");
-}
+export default Login;
