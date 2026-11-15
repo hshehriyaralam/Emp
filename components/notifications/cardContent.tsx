@@ -161,7 +161,7 @@ const CardContent = ({ filteredNotifications, handleApprove, handleReject, loadi
                   </div>
 
                   <div className="p-4">
-                    <iframe src={`${notif?.employee_file}#toolbar=0&navpanes=0&scrollbar=0`} title="Employee Document" className="h-[200px] w-full max-w-[320px] rounded-lg border border-[var(--border)] bg-[var(--surface)]" />
+                    <iframe src={`${notif?.employee_file}#toolbar=0&navpanes=0&scrollbar=0`} title="Employee Document" className="document-preview-frame h-[200px] w-full max-w-[320px] rounded-lg border border-[var(--border)] bg-[var(--surface)]" scrolling="no" />
                   </div>
                 </div>
               )}

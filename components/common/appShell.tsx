@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -16,6 +15,16 @@ type AppShellProps = {
   updateProfileImg: any;
   isAdmin: boolean;
 };
+
+const BrandMark = () => (
+  <span className="logo-tile" aria-hidden="true">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 8a5 5 0 0 1 10 0" />
+      <path d="M5 18a7 7 0 0 1 14 0" />
+      <circle cx="12" cy="8" r="2.5" />
+    </svg>
+  </span>
+);
 
 const AppShell = ({
   children,
@@ -153,18 +162,13 @@ const AppShell = ({
           {isMobileNavOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
         <Link href={isAdmin ? "/admin-dashboard" : "/employee-dashboard"} className="shell-brand">
-          <span className="logo-tile" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M7 8a5 5 0 0 1 10 0" />
-              <path d="M5 18a7 7 0 0 1 14 0" />
-              <circle cx="12" cy="8" r="2.5" />
-            </svg>
+          <BrandMark />
+          <span className="logo-row">
+            <span className="logo-title">Employee Hub</span>
+            <span className="logo-subtitle">Management System</span>
           </span>
-          <span className="mobile-brand-title">Employee Hub</span>
         </Link>
-        <button type="button" className="mobile-profile-button" aria-label="Open profile" onClick={() => setIsProfileOpen(true)}>
-          <Image src={user?.profile_image || "/userAvatar.png"} alt="" width={36} height={36} className="avatar-36" />
-        </button>
+        <span className="mobile-topbar-spacer" aria-hidden="true" />
       </header>
 
       {isMobileNavOpen && (
@@ -184,13 +188,7 @@ const AppShell = ({
         inert={isMobileViewport && !isMobileNavOpen}
       >
         <Link href={isAdmin ? "/admin-dashboard" : "/employee-dashboard"} className="sidebar-logo" onClick={closeMobileNav}>
-          <div className="logo-tile" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M7 8a5 5 0 0 1 10 0" />
-              <path d="M5 18a7 7 0 0 1 14 0" />
-              <circle cx="12" cy="8" r="2.5" />
-            </svg>
-          </div>
+          <BrandMark />
           <div className="logo-row">
             <div className="logo-title">Employee Hub</div>
             <div className="logo-subtitle">Management System</div>
@@ -228,27 +226,6 @@ const AppShell = ({
             <span>Profile</span>
           </button>
         </nav>
-
-        <div className="sidebar-user">
-          <button
-            type="button"
-            className="sidebar-user-trigger"
-            aria-label="Open profile"
-            onClick={() => setIsProfileOpen(true)}
-          >
-            <Image
-              src={user?.profile_image || "/userAvatar.png"}
-              alt=""
-              width={36}
-              height={36}
-              className="avatar-36"
-            />
-            <span className="user-meta">
-              <span className="user-name">{user?.name || "User"}</span>
-              <span className="user-role">{isAdmin ? "Administrator" : "Employee"}</span>
-            </span>
-          </button>
-        </div>
       </aside>
 
       <main className="app-main">{children}</main>

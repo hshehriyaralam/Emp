@@ -106,16 +106,24 @@ export const ProfileSidebar = forwardRef<HTMLDivElement, ProfileSidebarProps>(
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 pb-8">
+          <div className="profile-drawer-scroll flex-1 overflow-y-auto p-6 pb-8">
             <div className="mb-8 flex flex-col items-center text-center">
               <div className="relative flex flex-col items-center">
                 <div className="relative">
-                  <Avatar className="h-24 w-24 border-[3px] border-[var(--primary)]">
-                    <AvatarImage src={imagePreview || userData?.profile_image || "/userAvatar.png"} alt={userData?.name || "User"} loading="lazy" />
-                    <AvatarFallback className="bg-[var(--primary-soft)] text-2xl font-bold text-[var(--primary)]">{initials}</AvatarFallback>
-                    <Camera className="absolute bottom-0 right-0 h-7 w-7 rounded-full border-2 border-[var(--surface)] bg-[var(--primary-soft)] p-1.5 text-[var(--primary)]" />
-                  </Avatar>
-
+                  <button
+                    type="button"
+                    className="profile-avatar-trigger"
+                    aria-label="Change profile picture"
+                    onClick={() => fileInputRef.current?.click()}
+                  >
+                    <Avatar className="h-24 w-24 border-[3px] border-[var(--primary-soft-2)] bg-[var(--primary-soft)]">
+                      <AvatarImage src={imagePreview || userData?.profile_image || undefined} alt="" loading="lazy" />
+                      <AvatarFallback className="bg-[var(--primary-soft)] text-2xl font-bold text-[var(--primary)]">{initials}</AvatarFallback>
+                    </Avatar>
+                    <span className="profile-avatar-camera" aria-hidden="true">
+                      <Camera className="h-4 w-4" />
+                    </span>
+                  </button>
                   <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                 </div>
 

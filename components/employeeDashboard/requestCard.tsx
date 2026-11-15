@@ -151,6 +151,8 @@ const RequestCard = ({
             <iframe
               src={`${employeeReq.employee_file}#toolbar=0&navpanes=0&scrollbar=0`}
               title="Employee Document"
+              className="document-preview-frame"
+              scrolling="no"
             />
           </div>
         </section>
