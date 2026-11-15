@@ -1,11 +1,12 @@
 "use client"
-import { Bell} from 'lucide-react';
-import React, { useCallback, useState } from 'react';
-import { useApproveNotifyMutation, useRejectNotifyMutation } from '@/store/notifications';
-import { toast } from 'sonner';
-import { useAdminProfileQuery } from '@/store/admin';
+import { Bell } from "lucide-react";
+import React, { useState } from "react";
+import { useApproveNotifyMutation, useRejectNotifyMutation } from "@/store/notifications";
+import { toast } from "sonner";
+import { useAdminProfileQuery } from "@/store/admin";
 import dynamic from "next/dynamic";
-const CardContent = dynamic(() => import("./cardContent"))
+
+const CardContent = dynamic(() => import("./cardContent"));
 
 const NotificationsCards = ({ filteredNotifications }: any) => {
   const { data: Profile } = useAdminProfileQuery(undefined);
@@ -15,63 +16,63 @@ const NotificationsCards = ({ filteredNotifications }: any) => {
   const [rejectLoading, setRejectLoading] = useState(false);
   const adminId = Profile?.data.id;
 
-  const handleApprove =  async (id: any) => {
+  const handleApprove = async (id: any) => {
     try {
       setLoading(true);
       const response = await approveNotify({ id, adminId });
       if (response.error) {
-        toast.error("Approved Failed", { position: 'top-center' });
+        toast.error("Approved Failed", { position: "top-center" });
         setLoading(false);
         return;
       }
-      toast.success("Approved Notification", { position: 'top-center' });
+      toast.success("Approved Notification", { position: "top-center" });
       setLoading(false);
     } catch (error: any) {
-      toast.error(error.message || "Approved Failed", { position: 'top-center' });
+      toast.error(error.message || "Approved Failed", { position: "top-center" });
       setLoading(false);
     }
   };
-
 
   const handleReject = async (id: any) => {
     try {
       setRejectLoading(true);
       const response = await rejectNotify({ id, adminId });
       if (response.error) {
-        toast.error("Rejected Failed", { position: 'top-center' });
+        toast.error("Rejected Failed", { position: "top-center" });
         setRejectLoading(false);
         return;
       }
-      toast.success("Rejected Notification", { position: 'top-center' });
+      toast.success("Rejected Notification", { position: "top-center" });
       setRejectLoading(false);
     } catch (error: any) {
-      toast.error(error.message || "Rejected Failed", { position: 'top-center' });
+      toast.error(error.message || "Rejected Failed", { position: "top-center" });
       setRejectLoading(false);
     }
   };
- 
 
   return (
     <div className="space-y-4">
       {filteredNotifications?.length === 0 ? (
-        <div className="bg-gradient-to-br from-[#1a1a1a] to-[#121212] rounded-2xl border border-gray-800/50 p-16 text-center">
-          <div className="flex justify-center mb-4">
-            <div className="w-24 h-24 rounded-full bg-teal-500/10 flex items-center justify-center">
-              <Bell className="w-12 h-12 text-teal-400" />
+        <div className="rounded-[16px] border border-[var(--border)] bg-[var(--surface)] p-8 text-center sm:p-12">
+          <div className="mb-4 flex justify-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface-2)]">
+              <Bell className="h-6 w-6 text-[var(--muted)]" />
             </div>
           </div>
-          <h3 className="text-2xl font-semibold text-white mb-2">No Notifications</h3>
-          <p className="text-gray-400 max-w-md mx-auto">No notifications to display in this category.</p>
+          <h3 className="mb-2 text-lg font-semibold text-[var(--text)]">No Requests Yet</h3>
+          <p className="mx-auto max-w-md text-sm text-[var(--muted)]">No requests to display in this category.</p>
         </div>
-      ) : <CardContent   
+      ) : (
+        <CardContent
           filteredNotifications={filteredNotifications}
           handleApprove={handleApprove}
           handleReject={handleReject}
           loading={loading}
-          rejectLoading={rejectLoading}/>
-          }
+          rejectLoading={rejectLoading}
+        />
+      )}
     </div>
   );
 };
 
-export default   React.memo(NotificationsCards) ;
+export default React.memo(NotificationsCards);

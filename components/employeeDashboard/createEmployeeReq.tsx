@@ -1,32 +1,23 @@
-import React, {  useState } from "react";
+import React, { useRef, useState } from "react";
+import Image from "next/image";
 import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
-import {
-  X,
-  User,
-  Mail,
-  Building2,
-  DollarSign,
-  Upload,
-  User2Icon,
-  Pencil,
-} from "lucide-react";
+import { X, User, Mail, Building2, DollarSign, Upload, User2Icon, Pencil, FileText } from "lucide-react";
 import { EmployeeForm } from "@/types/employee";
 import { toast } from "sonner";
+import { useModalAccessibility } from "@/lib/useModalAccessibility";
 
-const CreateEmployeeReq = ({
-  setIsModalOpen,
-  onSuccess,
-  addEmployeeReq,
-  isLoading,
-  data,
-}: any) => {
+const CreateEmployeeReq = ({ setIsModalOpen, onSuccess, addEmployeeReq, isLoading, data }: any) => {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [file, setFile] = useState<null | File>(null);
+  const imageInputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const Id = data?.data?.id;
   const userEmail = data?.data?.email;
+  const closeModal = () => setIsModalOpen(false);
+  const dialogRef = useModalAccessibility<HTMLDivElement>(closeModal);
 
   const {
     register,
@@ -36,40 +27,63 @@ const CreateEmployeeReq = ({
     formState: { errors },
   } = useForm<EmployeeForm>();
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+  const handleImageFile = (file?: File, files?: FileList | null) => {
     if (!file) return;
-    if (!file.type.startsWith("image/"))
-      return toast.error("Please upload an image file");
-    if (file.size > 2 * 1024 * 1024)
-      return toast.error("Image size should be less than 2MB");
+    if (!file.type.startsWith("image/")) return toast.error("Please upload an image file");
+    if (file.size > 2 * 1024 * 1024) return toast.error("Image size should be less than 2MB");
 
     setImageFile(file);
     const reader = new FileReader();
     reader.onloadend = () => setImagePreview(reader.result as string);
     reader.readAsDataURL(file);
-    setValue("employee_image", e.target.files);
+    setValue("employee_image", files || null);
+  };
+
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleImageFile(e.target.files?.[0], e.target.files);
+  };
+
+  const handleImageDrop = (e: React.DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    handleImageFile(e.dataTransfer.files[0], e.dataTransfer.files);
   };
 
   const removeImage = () => {
     setImagePreview(null);
     setImageFile(null);
-    setValue("employee_image", null as any);
+    setValue("employee_image", null);
+    if (imageInputRef.current) imageInputRef.current.value = "";
   };
 
-  const fileOnChnage = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0) {
-      const selectedFiles = e.target.files[0];
-      setFile(selectedFiles);
+  const handleFile = (selectedFile?: File) => {
+    if (!selectedFile) return;
+    const allowedExtensions = [".pdf", ".doc", ".docx", ".xls", ".xlsx"];
+    if (!allowedExtensions.some((extension) => selectedFile.name.toLowerCase().endsWith(extension))) {
+      toast.error("Please upload a PDF, DOC, DOCX, XLS, or XLSX file");
+      return;
     }
+    setFile(selectedFile);
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    handleFile(e.target.files?.[0]);
+  };
+
+  const handleFileDrop = (e: React.DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    handleFile(e.dataTransfer.files[0]);
+  };
+
+  const removeFile = () => {
+    setFile(null);
+    setValue("employee_file", null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
   const onSubmit = async (data: EmployeeForm) => {
     try {
       if (userEmail !== data.email) {
-        toast.error("User email & Employee email does not match", {
-          position: "top-center",
-        });
+        toast.error("User email & Employee email does not match", { position: "top-center" });
         return;
       }
 
@@ -78,7 +92,11 @@ const CreateEmployeeReq = ({
       formData.append("email", data.email);
       formData.append("department", data.department);
       formData.append("salary", data.salary.toString());
-      formData.append("employee_image", imageFile!);
+      if (!imageFile) {
+        toast.error("Employee Image is Required", { position: "top-center" });
+        return;
+      }
+      formData.append("employee_image", imageFile);
       formData.append("created_by_id", Id);
       if (file) {
         formData.append("file", file);
@@ -88,263 +106,121 @@ const CreateEmployeeReq = ({
       removeImage();
       setIsModalOpen(false);
       onSuccess?.();
-      toast.success("Employee Request Successfully Created!", {
-        position: "top-center",
-      });
+      toast.success("Employee Request Successfully Created!", { position: "top-center" });
     } catch (error: any) {
-      toast.error(error?.data?.message || "Employee Request Failed!", {
-        position: "top-center",
-      });
+      toast.error(error?.data?.message || "Employee Request Failed!", { position: "top-center" });
     }
+  };
+
+  const submitForm = (event: React.FormEvent<HTMLFormElement>) => {
+    void handleSubmit(onSubmit)(event);
   };
 
   const employeeImage = register("employee_image");
   const employeeFile = register("employee_file");
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-      <div className="bg-gradient-to-br from-[#1a1a1a] to-[#121212] rounded-2xl border border-gray-800/50 w-full max-w-2xl shadow-2xl">
-        <div className="flex items-center justify-between p-5 border-b border-gray-800/50">
+    <div className="modal-backdrop">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="create-request-title" tabIndex={-1} className="modal-panel w-full max-w-[640px] rounded-[16px] border border-[var(--border)] bg-[var(--surface)]">
+        <div className="flex items-center justify-between border-b border-[var(--border)] p-5">
           <div>
-            <h2 className="text-2xl font-bold  text-teal-700  ">
-              Create Employee Request
-            </h2>
-            <p className="text-sm text-gray-400">
-              Fill in the details for employee request{" "}
-            </p>
+            <h2 id="create-request-title" className="text-[24px] font-[650] tracking-[-0.02em] text-[var(--text)]">Create Employee Request</h2>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">Fill in the details for employee request</p>
           </div>
-          <Button
-            onClick={() => setIsModalOpen(false)}
-            className="p-2 hover:bg-gray-800/50 rounded-xl"
-          >
-            <X className="w-5 h-5 text-gray-400 hover:text-white" />
-          </Button>
+          <button type="button" onClick={() => setIsModalOpen(false)} className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:bg-[var(--surface-2)]">
+            <X className="h-4 w-4" />
+          </button>
         </div>
 
-        <form
-          onSubmit={handleSubmit(onSubmit)}
-          className="p-5 space-y-4 max-h-[calc(90vh-130px)] overflow-y-auto"
-        >
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <User className="w-4 h-4 text-teal-400" />
-                Full Name *
-              </label>
-              <input
-                type="text"
-                {...register("name", { required: "Name is required" })}
-                className={`w-full px-4 py-2.5 bg-[#0a0a0a] border ${
-                  errors.name ? "border-red-500" : "border-gray-700/50"
-                } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50`}
-                placeholder="John Doe"
-              />
-              {errors.name && (
-                <p className="text-red-400 text-xs mt-1">
-                  {errors.name.message}
-                </p>
-              )}
-            </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-teal-400" />
-                Email Address *
-              </label>
-              <input
-                type="email"
-                {...register("email", {
-                  required: "Email is required",
-                  pattern: {
-                    value: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
-                    message: "Only Gmail addresses are allowed",
-                  },
-                })}
-                className={`w-full px-4 py-2.5 bg-[#0a0a0a] border ${
-                  errors.email ? "border-red-500" : "border-gray-700/50"
-                } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50`}
-                placeholder="john@gmail.com"
-              />
-              {errors.email && (
-                <p className="text-red-400 text-xs mt-1">
-                  {errors.email.message}
-                </p>
-              )}
+        <form onSubmit={submitForm} className="min-h-0 flex-1 space-y-4 overflow-y-auto p-5">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--text)]"><User className="h-4 w-4 text-[var(--primary)]" />Full Name *</label>
+              <input type="text" data-initial-focus {...register("name", { required: "Name is required" })} className={`w-full rounded-[12px] border bg-[var(--surface-2)] px-4 py-3 text-[14px] text-[var(--text)] placeholder:text-[var(--text-subtle)] outline-none transition-colors focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 ${errors.name ? "border-[var(--danger-text)]" : "border-[var(--border)]"}`} placeholder="John Doe" />
+              {errors.name && <p className="mt-1 text-xs text-[var(--danger-text)]">{errors.name.message}</p>}
             </div>
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-teal-400" />
-                Department *
-              </label>
-              <select
-                {...register("department", {
-                  required: "Department is required",
-                })}
-                className="w-full px-4 py-2.5 bg-[#0a0a0a] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-teal-500/50"
-              >
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--text)]"><Mail className="h-4 w-4 text-[var(--primary)]" />Email Address *</label>
+              <input type="email" {...register("email", { required: "Email is required", pattern: { value: /^[a-zA-Z0-9._%+-]+@gmail\.com$/, message: "Only Gmail addresses are allowed" } })} className={`w-full rounded-[12px] border bg-[var(--surface-2)] px-4 py-3 text-[14px] text-[var(--text)] placeholder:text-[var(--text-subtle)] outline-none transition-colors focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 ${errors.email ? "border-[var(--danger-text)]" : "border-[var(--border)]"}`} placeholder="john@gmail.com" />
+              {errors.email && <p className="mt-1 text-xs text-[var(--danger-text)]">{errors.email.message}</p>}
+            </div>
+
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--text)]"><Building2 className="h-4 w-4 text-[var(--primary)]" />Department *</label>
+              <select {...register("department", { required: "Department is required" })} className="w-full rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-[14px] text-[var(--text)] outline-none transition-colors focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2">
                 <option value="">Select Department</option>
-                {[
-                  "Engineering",
-                  "Marketing",
-                  "Sales",
-                  "HR",
-                  "Finance",
-                  "Design",
-                  "Operations",
-                ].map((dept) => (
-                  <option key={dept} value={dept}>
-                    {dept}
-                  </option>
+                {["Engineering", "Marketing", "Sales", "HR", "Finance", "Design", "Operations"].map((dept) => (
+                  <option key={dept} value={dept}>{dept}</option>
                 ))}
               </select>
             </div>
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-teal-400" />
-                Salary (USD) *
-              </label>
-              <input
-                type="number"
-                min="0"
-                step="1000"
-                {...register("salary", {
-                  required: "Salary is required",
-                  valueAsNumber: true,
-                  min: { value: 0, message: "Salary must be positive" },
-                })}
-                className={`w-full px-4 py-2.5 bg-[#0a0a0a] border ${
-                  errors.salary ? "border-red-500" : "border-gray-700/50"
-                } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50`}
-                placeholder="60000"
-              />
-              {errors.salary && (
-                <p className="text-red-400 text-xs mt-1">
-                  {errors.salary.message}
-                </p>
-              )}
+
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--text)]"><DollarSign className="h-4 w-4 text-[var(--primary)]" />Salary (USD) *</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--text-muted)]">$</span>
+                <input type="number" min="0" step="1000" {...register("salary", { required: "Salary is required", valueAsNumber: true, min: { value: 0, message: "Salary must be positive" } })} className={`w-full rounded-[12px] border bg-[var(--surface-2)] py-3 pl-9 pr-4 text-[14px] text-[var(--text)] placeholder:text-[var(--text-subtle)] outline-none transition-colors focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 ${errors.salary ? "border-[var(--danger-text)]" : "border-[var(--border)]"}`} placeholder="60000" />
+              </div>
+              {errors.salary && <p className="mt-1 text-xs text-[var(--danger-text)]">{errors.salary.message}</p>}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <User2Icon className="w-4 h-4 text-teal-400" />
-                Employee Image *
-              </label>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--text)]"><User2Icon className="h-4 w-4 text-[var(--primary)]" />Employee Image *</label>
 
               {imagePreview ? (
-                <div className="relative group">
-                  <div className="relative w-full h-40 rounded-xl overflow-hidden border-2 border-teal-500/30 bg-[#0a0a0a]">
-                    <img
-                      src={imagePreview}
-                      alt="Employee"
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
-                      <label className="cursor-pointer p-2.5 bg-teal-600/90 hover:bg-teal-700 rounded-xl transition-all hover:scale-110">
-                        <Pencil className="w-5 h-5 text-white" />
-                        <input
-                          type="file"
-                          accept="image/*"
-                          className="hidden"
-                          {...employeeImage}
-                          onChange={(e) => {
-                            employeeImage.onChange(e);
-                            handleImageChange(e);
-                          }}
-                        />
+                <div className="group relative" onDragOver={(event) => event.preventDefault()} onDrop={handleImageDrop}>
+                  <div className="relative h-28 w-full overflow-hidden rounded-[16px] border border-[var(--border)] bg-[var(--surface-2)]">
+                    <Image src={imagePreview} alt="Uploaded employee photo" fill sizes="(max-width: 640px) 100vw, 600px" unoptimized className="object-cover" />
+                    <div className="absolute inset-0 flex items-center justify-center gap-3 bg-[var(--overlay)] opacity-0 transition-opacity duration-150 ease-out group-hover:opacity-100">
+                      <label className="flex h-10 w-10 cursor-pointer items-center justify-center rounded-[10px] bg-[var(--primary)] text-[var(--on-primary)]">
+                        <Pencil className="h-4 w-4" />
+                        <input type="file" accept="image/*" className="hidden" {...employeeImage} ref={(element) => { employeeImage.ref(element); imageInputRef.current = element; }} onChange={(e) => { employeeImage.onChange(e); handleImageChange(e); }} />
                       </label>
-                      <button
-                        type="button"
-                        onClick={removeImage}
-                        className="p-2.5 bg-red-600/90 hover:bg-red-700 rounded-xl transition-all hover:scale-110"
-                      >
-                        <X className="w-5 h-5 text-white" />
+                      <button type="button" onClick={removeImage} className="flex h-10 w-10 items-center justify-center rounded-[10px] bg-[var(--danger-text)] text-[var(--on-primary)]">
+                        <X className="h-4 w-4" />
                       </button>
                     </div>
                   </div>
                 </div>
               ) : (
-                // Upload Area
-                <label className="flex flex-col items-center justify-center w-full h-40   border-gray-700 hover:border-teal-500 rounded-xl bg-[#0a0a0a] hover:bg-[#111] transition-all cursor-pointer group">
-                  <div className="p-3.5 bg-teal-500/10 rounded-full group-hover:bg-teal-500/20 transition-all">
-                    <Upload className="w-8 h-8 text-teal-400 group-hover:scale-110 transition-transform" />
+                <label onDragOver={(event) => event.preventDefault()} onDrop={handleImageDrop} className="flex h-28 w-full cursor-pointer flex-col items-center justify-center rounded-[16px] border border-dashed border-[var(--border)] bg-[var(--surface-2)] transition-colors hover:border-[var(--accent)]">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--primary)]">
+                    <Upload className="h-5 w-5" />
                   </div>
-                  <p className="mt-3 text-sm font-medium text-gray-300 group-hover:text-teal-400 transition-colors">
-                    Click to upload employee image
-                  </p>
-
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    {...employeeImage}
-                    onChange={(e) => {
-                      employeeImage.onChange(e);
-                      handleImageChange(e);
-                    }}
-                  />
+                  <p className="mt-2 text-sm font-medium text-[var(--text)]">Click to upload or drag and drop</p>
+                  <input type="file" accept="image/*" className="hidden" {...employeeImage} ref={(element) => { employeeImage.ref(element); imageInputRef.current = element; }} onChange={(e) => { employeeImage.onChange(e); handleImageChange(e); }} />
                 </label>
               )}
-              {errors.employee_image && (
-                <p className="text-red-400 text-xs mt-1">
-                  Employee Image is Required
-                </p>
-              )}
+              {errors.employee_image && <p className="mt-1 text-xs text-[var(--danger-text)]">Employee Image is Required</p>}
             </div>
 
-            <div className="space-y-1">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <User2Icon className="w-4 h-4 text-teal-400" />
-                Employee Resume *
-              </label>
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--text)]"><User2Icon className="h-4 w-4 text-[var(--primary)]" />Employee Resume *</label>
 
-              <label className="flex flex-col items-center justify-center w-full h-40   border-gray-700 hover:border-teal-500 rounded-xl bg-[#0a0a0a] hover:bg-[#111] transition-all cursor-pointer group">
-                <div className="p-3.5 bg-teal-500/10 rounded-full group-hover:bg-teal-500/20 transition-all">
-                  <Upload className="w-8 h-8 text-teal-400 group-hover:scale-110 transition-transform" />
+              <label onDragOver={(event) => event.preventDefault()} onDrop={handleFileDrop} className="flex h-28 w-full cursor-pointer flex-col items-center justify-center rounded-[16px] border border-dashed border-[var(--border)] bg-[var(--surface-2)] transition-colors hover:border-[var(--accent)]">
+                <div className="flex h-10 w-10 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--primary)]">
+                  {file ? <FileText className="h-5 w-5" /> : <Upload className="h-5 w-5" />}
                 </div>
-                <p className="mt-3 text-sm font-medium text-gray-300 group-hover:text-teal-400 transition-colors">
-                  Click to upload employee resume
+                <p className="mt-2 max-w-[90%] truncate text-sm font-medium text-[var(--text)]">
+                  {file?.name || "Click to upload or drag and drop"}
                 </p>
 
-                <input
-                  {...employeeFile}
-                  onChange={(e) => {
-                    employeeFile.onChange(e);
-                    fileOnChnage(e);
-                  }}
-                  type="file"
-                  accept=".pdf, .doc, .docx, .xls, .xlsx"
-                  className="hidden"
-                />
+                <input {...employeeFile} ref={(element) => { employeeFile.ref(element); fileInputRef.current = element; }} onChange={(e) => { employeeFile.onChange(e); handleFileChange(e); }} type="file" accept=".pdf, .doc, .docx, .xls, .xlsx" className="hidden" />
               </label>
-              {errors.employee_file && (
-                <p className="text-red-400 text-xs mt-1">
-                  Employee Resumen is Required
-                </p>
-              )}
+              {file && <button type="button" onClick={removeFile} className="mt-1 min-h-11 text-xs font-medium text-[var(--danger-text)] underline-offset-2 hover:underline">Remove file</button>}
+              {errors.employee_file && <p className="mt-1 text-xs text-[var(--danger-text)]">Employee Resume is Required</p>}
             </div>
           </div>
 
-          <div className="flex gap-3 pt-2 border-t border-gray-800/50">
-            <Button
-              type="button"
-              onClick={() => {
-                setIsModalOpen(false);
-                removeImage();
-              }}
-              className="flex-1 px-4 py-3 bg-gray-800/50 hover:bg-gray-700/50 rounded-xl text-gray-300 font-medium h-12  cursor-pointer"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 rounded-xl text-white font-medium shadow-lg shadow-teal-500/20 disabled:opacity-50 flex items-center justify-center gap-2 h-12  cursor-pointer"
-            >
+          <div className="modal-footer">
+            <Button type="button" onClick={() => { setIsModalOpen(false); removeImage(); }} className="h-12 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-2)]">Cancel</Button>
+            <Button type="submit" disabled={isLoading} className="h-12 flex-1 rounded-full bg-[var(--primary)] text-[var(--on-primary)] hover:bg-[var(--primary-hover)] disabled:opacity-60">
               {isLoading ? (
                 <>
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-[var(--on-primary-muted)] border-t-[var(--on-primary)]"></span>
                   Adding...
                 </>
               ) : (
@@ -358,4 +234,4 @@ const CreateEmployeeReq = ({
   );
 };
 
-export default   React.memo(CreateEmployeeReq) ;
+export default React.memo(CreateEmployeeReq);

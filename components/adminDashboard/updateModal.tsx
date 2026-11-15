@@ -1,20 +1,24 @@
 "use client";
 import { useForm } from "react-hook-form";
 import { Button } from "../ui/button";
-import { X, User, Mail, Building2, DollarSign, Briefcase } from "lucide-react";
+import { X, User, Mail, Building2, DollarSign } from "lucide-react";
 import { EmployeeForm } from "@/types/employee";
 import { toast } from "sonner";
 import React, { useEffect } from "react";
 import { useUpdateEmployeeMutation } from "@/store/employeeApi";
+import { useModalAccessibility } from "@/lib/useModalAccessibility";
 
 const UpdateModal = ({ setIsEditModal, employee }: any) => {
   const [updateEmployee, { isLoading }] = useUpdateEmployeeMutation();
+  const closeModal = () => setIsEditModal(false);
+  const dialogRef = useModalAccessibility<HTMLDivElement>(closeModal);
   const {
     register,
     handleSubmit,
     reset,
     formState: { errors },
   } = useForm<EmployeeForm>();
+
   const onSubmit = async (data: EmployeeForm) => {
     try {
       await updateEmployee({
@@ -25,22 +29,12 @@ const UpdateModal = ({ setIsEditModal, employee }: any) => {
       toast.success("Employee Successfully Updated!", {
         position: "top-center",
         duration: 3000,
-        style: {
-          background: '#1a1a1a',
-          border: '1px solid #374151',
-          color: '#fff',
-        },
       });
       reset();
       setIsEditModal(false);
     } catch (error: any) {
-      toast.error(error.message || "Update failed", { 
-        position: 'top-center',
-        style: {
-          background: '#1a1a1a',
-          border: '1px solid #374151',
-          color: '#fff',
-        },
+      toast.error(error.message || "Update failed", {
+        position: "top-center",
       });
       console.log(error);
     }
@@ -58,76 +52,57 @@ const UpdateModal = ({ setIsEditModal, employee }: any) => {
   }, [employee, reset]);
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-gradient-to-br from-[#1a1a1a] to-[#121212] rounded-2xl border border-gray-800/50 w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl">
-        <div className="sticky top-0 bg-[#1a1a1a]/95 backdrop-blur-sm z-10 flex items-center justify-between p-6 border-b border-gray-800/50">
+    <div className="modal-backdrop">
+      <div ref={dialogRef} role="dialog" aria-modal="true" aria-labelledby="update-employee-title" tabIndex={-1} className="modal-panel w-full max-w-[640px] rounded-[16px] border border-[var(--border)] bg-[var(--surface)]">
+        <div className="sticky top-0 z-10 flex items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] p-6">
           <div>
-            <h2 className="text-2xl font-bold bg-gradient-to-r from-teal-400 to-teal-600 bg-clip-text text-transparent">
-              Update Employee
-            </h2>
-            <p className="text-sm text-gray-400 mt-1">Edit employee information</p>
+            <h2 id="update-employee-title" className="text-[24px] font-[650] tracking-[-0.02em] text-[var(--text)]">Update Employee</h2>
+            <p className="mt-1 text-sm text-[var(--text-muted)]">Edit employee information</p>
           </div>
-          <Button
-            onClick={() => setIsEditModal(false)}
-            className="p-2 hover:bg-gray-800/50 rounded-xl transition-colors cursor-pointer"
-          >
-            <X className="w-5 h-5 text-gray-400 hover:text-white" />
-          </Button>
+          <button type="button" onClick={() => setIsEditModal(false)} className="flex h-9 w-9 items-center justify-center rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text-muted)] hover:bg-[var(--surface-2)]">
+            <X className="h-4 w-4" />
+          </button>
         </div>
-        <form onSubmit={handleSubmit(onSubmit)} className="p-6 space-y-5">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {/* Name */}
+
+        <form onSubmit={handleSubmit(onSubmit)} className="min-h-0 flex-1 space-y-5 overflow-y-auto p-6">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <User className="w-4 h-4 text-teal-400" />
-                Full Name *
-              </label>
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--text)]"><User className="h-4 w-4 text-[var(--primary)]" />Full Name *</label>
               <input
                 type="text"
                 required
+                data-initial-focus
                 {...register("name", { required: "Name is required" })}
-                className={`w-full px-4 py-3 bg-[#0a0a0a] border ${
-                  errors.name ? 'border-red-500' : 'border-gray-700/50'
-                } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 transition-all`}
+                className={`w-full rounded-[12px] border bg-[var(--surface-2)] px-4 py-3 text-[14px] text-[var(--text)] placeholder:text-[var(--text-subtle)] outline-none transition-colors focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 ${errors.name ? "border-[var(--danger-text)]" : "border-[var(--border)]"}`}
                 placeholder="John Doe"
               />
-              {errors.name && (
-                <p className="text-red-400 text-xs mt-1">{errors.name.message}</p>
-              )}
+              {errors.name && <p className="mt-1 text-xs text-[var(--danger-text)]">{errors.name.message}</p>}
             </div>
+
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <Mail className="w-4 h-4 text-teal-400" />
-                Email Address *
-              </label>
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--text)]"><Mail className="h-4 w-4 text-[var(--primary)]" />Email Address *</label>
               <input
                 type="email"
                 required
-                {...register("email", { 
+                {...register("email", {
                   required: "Email is required",
                   pattern: {
                     value: /^[a-zA-Z0-9._%+-]+@gmail\.com$/,
                     message: "Only Gmail addresses are allowed",
                   },
                 })}
-                className={`w-full px-4 py-3 bg-[#0a0a0a] border ${
-                  errors.email ? 'border-red-500' : 'border-gray-700/50'
-                } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 transition-all`}
+                className={`w-full rounded-[12px] border bg-[var(--surface-2)] px-4 py-3 text-[14px] text-[var(--text)] placeholder:text-[var(--text-subtle)] outline-none transition-colors focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 ${errors.email ? "border-[var(--danger-text)]" : "border-[var(--border)]"}`}
                 placeholder="john@gmail.com"
               />
-              {errors.email && (
-                <p className="text-red-400 text-xs mt-1">{errors.email.message}</p>
-              )}
+              {errors.email && <p className="mt-1 text-xs text-[var(--danger-text)]">{errors.email.message}</p>}
             </div>
+
             <div className="space-y-1.5">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <Building2 className="w-4 h-4 text-teal-400" />
-                Department *
-              </label>
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--text)]"><Building2 className="h-4 w-4 text-[var(--primary)]" />Department *</label>
               <select
                 required
                 {...register("department", { required: "Department is required" })}
-                className="w-full px-4 py-3 bg-[#0a0a0a] border border-gray-700/50 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-teal-500/50 transition-all"
+                className="w-full rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] px-4 py-3 text-[14px] text-[var(--text)] outline-none transition-colors focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2"
               >
                 <option value="">Select Department</option>
                 <option value="Engineering">Engineering</option>
@@ -139,52 +114,35 @@ const UpdateModal = ({ setIsEditModal, employee }: any) => {
                 <option value="Operations">Operations</option>
               </select>
             </div>
-            <div className="space-y-1.5 ">
-              <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                <DollarSign className="w-4 h-4 text-teal-400" />
-                Salary (USD) *
-              </label>
-              <input
-                type="number"
-                required
-                min="0"
-                step="1000"
-                {...register("salary", { 
-                  required: "Salary is required",
-                  valueAsNumber: true,
-                  min: { value: 0, message: "Salary must be positive" }
-                })}
-                className={`w-full px-4 py-3 bg-[#0a0a0a] border ${
-                  errors.salary ? 'border-red-500' : 'border-gray-700/50'
-                } rounded-xl text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-teal-500/50 transition-all`}
-                placeholder="60000"
-              />
-              {errors.salary && (
-                <p className="text-red-400 text-xs mt-1">{errors.salary.message}</p>
-              )}
+
+            <div className="space-y-1.5">
+              <label className="flex items-center gap-2 text-sm font-medium text-[var(--text)]"><DollarSign className="h-4 w-4 text-[var(--primary)]" />Salary (USD) *</label>
+              <div className="relative">
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-sm text-[var(--text-muted)]">$</span>
+                <input
+                  type="number"
+                  required
+                  min="0"
+                  step="1000"
+                  {...register("salary", { required: "Salary is required", valueAsNumber: true, min: { value: 0, message: "Salary must be positive" } })}
+                  className={`w-full rounded-[12px] border bg-[var(--surface-2)] py-3 pl-9 pr-4 text-[14px] text-[var(--text)] placeholder:text-[var(--text-subtle)] outline-none transition-colors focus:border-[var(--accent)] focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 ${errors.salary ? "border-[var(--danger-text)]" : "border-[var(--border)]"}`}
+                  placeholder="60000"
+                />
+              </div>
+              {errors.salary && <p className="mt-1 text-xs text-[var(--danger-text)]">{errors.salary.message}</p>}
             </div>
           </div>
-          <div className="flex gap-3 pt-4 border-t border-gray-800/50">
-            <Button
-              type="button"
-              onClick={() => setIsEditModal(false)}
-              className="flex-1 px-4 py-3 bg-gray-800/50 hover:bg-gray-700/50 
-              rounded-xl text-gray-300 font-medium transition-colors cursor-pointer  h-10"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isLoading}
-              className="flex-1 px-4 py-3 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 rounded-xl text-white font-medium transition-all shadow-lg shadow-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer h-10"
-            >
+
+          <div className="modal-footer">
+            <Button type="button" onClick={() => setIsEditModal(false)} className="h-11 flex-1 rounded-full border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-2)]">Cancel</Button>
+            <Button type="submit" disabled={isLoading} className="h-11 flex-1 rounded-full bg-[var(--primary)] text-[var(--on-primary)] hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50">
               {isLoading ? (
                 <>
-                  <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  <span className="mr-2 inline-block h-4 w-4 animate-spin rounded-full border-2 border-[var(--on-primary-muted)] border-t-[var(--on-primary)]"></span>
                   Updating...
                 </>
               ) : (
-                'Update Employee'
+                "Update Employee"
               )}
             </Button>
           </div>

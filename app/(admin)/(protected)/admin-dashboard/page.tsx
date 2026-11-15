@@ -1,5 +1,5 @@
 "use client";
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import {
   useAddEmployeeMutation,
   useGetAllEmployeesQuery,
@@ -10,10 +10,11 @@ import {
   useUpdateProfileImgMutation,
 } from "@/store/admin";
 import dynamic from "next/dynamic";
+import AppShell from "@/components/common/appShell";
+
 const ErrorInterface = dynamic(
   () => import("@/components/adminDashboard/errorInterface"),
 );
-const Header = dynamic(() => import("@/components/common/header"));
 const Stats = dynamic(() => import("@/components/adminDashboard/stats"));
 const Filter = dynamic(() => import("@/components/adminDashboard/filter"));
 const Employee = dynamic(() => import("@/components/adminDashboard/employee"));
@@ -31,15 +32,6 @@ const Dashboard = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [sortOrder, setSortOrder] = useState("default");
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [animateStats, setAnimateStats] = useState(false);
-
-
-
-  
-
-  useEffect(() => {
-    setAnimateStats(true);
-  }, []);
 
   const filteredEmployees = useMemo(() => {
     if (!data) return [];
@@ -75,7 +67,6 @@ const Dashboard = () => {
     return employees;
   }, [data, searchTerm, sortOrder]);
 
-  // stats
   const stats = useMemo(() => {
     if (!data) return null;
     const total = data.length;
@@ -86,38 +77,55 @@ const Dashboard = () => {
     );
 
     const avgSalary = total > 0 ? Math.round(totalSalary / total) : 0;
-
     const maxSalary =
       total > 0
         ? Math.max(...data.map((emp: any) => parseFloat(emp.salary)))
         : 0;
+
     return { total, departments, avgSalary, maxSalary, totalSalary };
   }, [data]);
-  if (error) return <ErrorInterface />;
 
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] via-[#0d0d0d] to-[#0a0a0a] font-quicksand z-30  ">
-      <Header
+  if (error) {
+    return (
+      <AppShell
         Profile={Profile}
         logOutUser={logOutUser}
-        navigate={"/admin-login"}
+        navigate="/admin-login"
         updateProfileImg={updateProfileImg}
-        isAdmin={true}
-      />
+        isAdmin
+      >
+        <ErrorInterface />
+      </AppShell>
+    );
+  }
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {stats && <Stats stats={stats} animateStats={animateStats} />}
+  return (
+    <AppShell
+      Profile={Profile}
+      logOutUser={logOutUser}
+      navigate="/admin-login"
+      updateProfileImg={updateProfileImg}
+      isAdmin
+    >
+        <div className="page-header">
+          <div>
+            <h1 className="page-title">Employees</h1>
+            <p className="page-subtitle">Manage your workforce</p>
+          </div>
 
-        <Filter
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          setIsModalOpen={setIsModalOpen}
-          sortOrder={sortOrder}
-          setSortOrder={setSortOrder}
-          viewMode={viewMode}
-          setViewMode={setViewMode}
-          totalResults={filteredEmployees.length}
-        />
+          <Filter
+            searchTerm={searchTerm}
+            setSearchTerm={setSearchTerm}
+            setIsModalOpen={setIsModalOpen}
+            sortOrder={sortOrder}
+            setSortOrder={setSortOrder}
+            viewMode={viewMode}
+            setViewMode={setViewMode}
+            totalResults={filteredEmployees.length}
+          />
+        </div>
+
+        {stats && <Stats stats={stats} />}
 
         <Employee
           filteredEmployees={filteredEmployees}
@@ -126,7 +134,6 @@ const Dashboard = () => {
           viewMode={viewMode}
           setIsModalOpen={setIsModalOpen}
         />
-      </main>
 
       {isModalOpen && (
         <AddEmployeeModal
@@ -136,7 +143,7 @@ const Dashboard = () => {
           data={Profile}
         />
       )}
-    </div>
+    </AppShell>
   );
 };
 

@@ -1,7 +1,6 @@
 "use client";
 import { useMemo, useState } from "react";
-import { Bell, Filter } from "lucide-react";
-import Header from "@/components/common/header";
+import AppShell from "@/components/common/appShell";
 import { useGetNotificationsQuery } from "@/store/notifications";
 import {
   useAdminProfileQuery,
@@ -23,7 +22,6 @@ const Notifications = () => {
   const [filter, setFilter] = useState("all");
 
   const filteredNotifications = useMemo(() => {
-    notifications;
     if (!notifications) return [];
     if (filter === "all") return notifications;
     return notifications.filter((notif: any) => notif.status === filter);
@@ -40,76 +38,52 @@ const Notifications = () => {
   }, [notifications]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] via-[#0d0d0d] to-[#0a0a0a] font-quicksand">
-      <Header
-        Profile={Profile}
-        logOutUser={logOutUser}
-        navigate={"/admin-login"}
-        updateProfileImg={updateProfileImg}
-        isAdmin={true}
-      />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-8 gap-4">
+    <AppShell
+      Profile={Profile}
+      logOutUser={logOutUser}
+      navigate="/admin-login"
+      updateProfileImg={updateProfileImg}
+      isAdmin
+    >
+      <div className="mx-auto max-w-7xl">
+        <div className="mb-7 flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-400 to-teal-600 bg-clip-text text-transparent flex items-center gap-3">
-              <Bell className="w-8 h-8 text-teal-400" />
-              Notifications
-            </h1>
-            <p className="text-gray-400 mt-1">
-              Manage employee requests and notifications
-            </p>
+            <h1 className="page-title">Requests</h1>
+            <p className="page-subtitle">Review and manage employee requests</p>
           </div>
-        </div>
-
-        <div className="bg-gradient-to-br from-[#1a1a1a] to-[#121212] rounded-2xl border border-gray-800/50 p-4 mb-6 backdrop-blur-sm">
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2 text-gray-400">
-              <Filter className="w-4 h-4" />
-              <span className="text-sm font-medium">Filter:</span>
-            </div>
-            <div className="flex flex-wrap gap-2">
+          <div className="request-filters" role="group" aria-label="Filter requests">
               <button
+                type="button"
+                aria-pressed={filter === "all"}
                 onClick={() => setFilter("all")}
-                className={`px-4 py-2 rounded-xl text-sm transition-all duration-300 cursor-pointer ${
-                  filter === "all"
-                    ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30"
-                    : "bg-[#0a0a0a] text-gray-400 hover:text-white border border-gray-700/50 hover:border-teal-500/30"
-                }`}
+                className={`filter-pill${filter === "all" ? " active" : ""}`}
               >
                 All ({counts.all})
               </button>
               <button
+                type="button"
+                aria-pressed={filter === "pending"}
                 onClick={() => setFilter("pending")}
-                className={`px-4 py-2 rounded-xl text-sm transition-all duration-300 cursor-pointer ${
-                  filter === "pending"
-                    ? "bg-teal-600 text-white shadow-lg shadow-teal-500/30"
-                    : "bg-[#0a0a0a] text-gray-400 hover:text-white border border-gray-700/50 hover:border-teal-500/30"
-                }`}
+                className={`filter-pill${filter === "pending" ? " active" : ""}`}
               >
                 Pending ({counts.pending})
               </button>
               <button
+                type="button"
+                aria-pressed={filter === "accept"}
                 onClick={() => setFilter("accept")}
-                className={`px-4 py-2 rounded-xl text-sm transition-all duration-300 cursor-pointer ${
-                  filter === "accept"
-                    ? "bg-green-600 text-white shadow-lg shadow-green-500/30"
-                    : "bg-[#0a0a0a] text-gray-400 hover:text-white border border-gray-700/50 hover:border-green-500/30"
-                }`}
+                className={`filter-pill${filter === "accept" ? " active" : ""}`}
               >
                 Accepted ({counts.accept})
               </button>
               <button
+                type="button"
+                aria-pressed={filter === "reject"}
                 onClick={() => setFilter("reject")}
-                className={`px-4 py-2 rounded-xl text-sm transition-all duration-300 cursor-pointer ${
-                  filter === "reject"
-                    ? "bg-red-600 text-white shadow-lg shadow-red-500/30"
-                    : "bg-[#0a0a0a] text-gray-400 hover:text-white border border-gray-700/50 hover:border-red-500/30"
-                }`}
+                className={`filter-pill${filter === "reject" ? " active" : ""}`}
               >
                 Rejected ({counts.reject})
               </button>
-            </div>
           </div>
         </div>
 
@@ -117,8 +91,8 @@ const Notifications = () => {
           isLoading={isLoading}
           filteredNotifications={filteredNotifications}
         />
-      </main>
-    </div>
+      </div>
+    </AppShell>
   );
 };
 

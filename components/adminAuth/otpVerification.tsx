@@ -8,7 +8,6 @@ import {
   InputOTPSlot,
 } from "@/components/ui/input-otp";
 // import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { ArrowRight, Clock, CheckCircle, Loader2 } from "lucide-react";
 
 
@@ -23,7 +22,6 @@ const OTPVerification = ({
   const [isResending, setIsResending] = useState(false);
   const [timer, setTimer] = useState(120);
   const [canResend, setCanResend] = useState(false);
-  const router = useRouter();
 
   // Timer logic
   useEffect(() => {
@@ -39,19 +37,19 @@ const OTPVerification = ({
 
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0a0a] via-[#0d0d0d] to-[#0a0a0a] py-12 px-4 sm:px-6 lg:px-8 font-quicksand relative overflow-hidden">
-      <div className="max-w-md w-full relative z-10">
-        <div className="bg-gradient-to-br from-[#1a1a1a] to-[#121212] p-8 rounded-2xl border border-gray-800/50 shadow-2xl shadow-teal-500/5 backdrop-blur-sm">
+    <div className="flex min-h-dvh items-center justify-center bg-[var(--bg)] px-4 py-8 sm:px-6 lg:px-8 font-quicksand">
+      <div className="relative z-10 w-full max-w-[420px]">
+        <div className="rounded-[16px] border border-[var(--border)] bg-[var(--surface)] p-8">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-full bg-teal-500/10 flex items-center justify-center mx-auto mb-4">
-              <CheckCircle className="w-8 h-8 text-teal-400" />
+            <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-[11px] bg-[var(--primary-soft)] text-[var(--primary)]">
+              <CheckCircle className="h-5 w-5" />
             </div>
-            <h2 className="text-3xl font-bold bg-gradient-to-r from-teal-400 to-teal-500 bg-clip-text text-transparent">
+            <h2 className="text-[26px] font-[650] tracking-[-0.025em] text-[var(--text)]">
               OTP Verification
             </h2>
-            <p className="mt-2 text-gray-400 text-sm"> x
+            <p className="mt-2 text-sm text-[var(--text-muted)]">
               Enter the 6-digit OTP sent to{" "}
-              <span className="text-teal-400 font-medium">{email}</span>
+              <span className="font-medium text-[var(--primary)]">{email}</span>
             </p>
           </div>
           <div className="flex justify-center mb-8">
@@ -66,31 +64,31 @@ const OTPVerification = ({
                   <InputOTPSlot
                     key={index}
                     index={index}
-                    className="w-12 h-14 text-center text-xl font-semibold text-white bg-[#0a0a0a] border border-gray-700/50 rounded-xl focus:ring-2 focus:ring-teal-500/50 focus:border-transparent transition-all duration-300"
+                    className="h-14 w-12 rounded-[12px] border border-[var(--border)] bg-[var(--surface-2)] text-center text-xl font-semibold text-[var(--text)] outline-none focus:border-[var(--accent)] focus:ring-2 focus:ring-[var(--accent)]/30"
                   />
                 ))}
               </InputOTPGroup>
             </InputOTP>
           </div>
 
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-2 text-sm text-gray-400">
-              <Clock className="w-4 h-4 text-teal-400" />
+          <div className="mb-6 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2 text-sm text-[var(--text-muted)]">
+            <Clock className="h-4 w-4 text-[var(--primary)]" />
               <span>
                 {timer > 0 ? (
-                  <>Resend in <span className="text-teal-400 font-semibold">{timer}s</span></>
+                  <>Resend in <span className="font-semibold text-[var(--primary)]">{timer}s</span></>
                 ) : (
-                  <span className="text-green-400">Ready to resend</span>
+                  <span className="text-[var(--success-text)]">Ready to resend</span>
                 )}
               </span>
             </div>
             <button
               onClick={handleResendOTP}
               disabled={!canResend || isResending}
-              className={`text-sm font-medium transition-all duration-300 ${
+              className={`min-h-11 rounded-full px-3 text-sm font-medium transition-colors duration-150 ${
                 canResend && !isResending
-                  ? "text-teal-400 hover:text-teal-300 hover:underline cursor-pointer"
-                  : "text-gray-500 cursor-not-allowed opacity-50"
+                  ? "text-[var(--primary)] hover:underline"
+                  : "cursor-not-allowed text-[var(--text-muted)] opacity-50"
               }`}
             >
               {isResending ? (
@@ -106,7 +104,7 @@ const OTPVerification = ({
           <Button
             onClick={handleVerifyOTP}
             disabled={isLoading}
-            className="w-full h-12 bg-gradient-to-r from-teal-600 to-teal-700 hover:from-teal-700 hover:to-teal-800 text-white font-semibold rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-teal-500/30 hover:shadow-teal-500/40 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 cursor-pointer group"
+            className="flex h-[46px] w-full cursor-pointer items-center justify-center gap-2 rounded-full bg-[var(--primary)] font-semibold text-[var(--on-primary)] hover:bg-[var(--primary-hover)] disabled:cursor-not-allowed disabled:opacity-50"
           >
             {isLoading ? (
               <>
@@ -121,15 +119,15 @@ const OTPVerification = ({
             )}
           </Button>
           <div className="text-center pt-4">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-[var(--text-muted)]">
               Didn't receive OTP?{" "}
               <button
                 onClick={handleResendOTP}
                 disabled={!canResend || isResending}
-                className={`font-medium transition-colors hover:underline ${
+                className={`min-h-11 rounded-full px-2 font-medium transition-colors hover:underline ${
                   canResend && !isResending
-                    ? "text-teal-400 hover:text-teal-300 cursor-pointer"
-                    : "text-gray-500 cursor-not-allowed"
+                    ? "text-[var(--primary)]"
+                    : "cursor-not-allowed text-[var(--text-muted)]"
                 }`}
               >
                 Click here to resend

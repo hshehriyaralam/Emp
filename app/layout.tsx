@@ -37,7 +37,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <ReduxProvider>
           <SocketProvider>
-            <Toaster />
+            <Toaster position="top-center" />
             {children}
           </SocketProvider>
         </ReduxProvider>

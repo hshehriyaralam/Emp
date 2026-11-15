@@ -1,96 +1,87 @@
 "use client";
-import { avatars } from "@/lib/avatars";
+
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { formatDate } from "../common/formatDate";
+import { departmentColor, avatarPalette } from "@/lib/departmentStyles";
 
 const EmployeeTable = ({ filteredEmployees }: any) => {
-  const router = useRouter();
-  return (
-    <div className="bg-gradient-to-br from-[#1a1a1a] to-[#121212] rounded-2xl border border-gray-800/50 overflow-hidden">
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead className="bg-[#0f0f0f] border-b border-gray-800/50">
-            <tr>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Employee
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider hidden sm:table-cell">
-                Department
-              </th>
-              <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase tracking-wider hidden lg:table-cell">
-                Email
-              </th>
-              <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider">
-                Salary
-              </th>
-              <th className="px-6 py-4 text-right text-xs font-medium text-gray-400 uppercase tracking-wider hidden xl:table-cell">
-                Joined
-              </th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-gray-800/30">
-            {filteredEmployees?.map((employee: any) => (
-              <tr
-                key={employee.id}
-                onClick={() => router.push(`/admin-employees/${employee.id}`)}
-                className=" transition-colors cursor-pointer group"
-              >
-                <td className="px-6 py-4">
-                  <div className="flex items-center gap-3">
-                    {employee?.profile_image ? (
-                      <Image
-                        src={employee?.profile_image || "/userAvatar.png"}
-                        alt={employee.name}
-                        width={200}
-                        height={200}
-                        loading="lazy"
-                        className="w-20 h-20 rounded-full object-cover relative z-10 border-2 border-gray-700 "
-                      />
-                    ) : (
-                      <Image
-                        src={"/userAvatar.png"}
-                        alt={employee.name}
-                        width={200}
-                        height={200}
-                        loading="lazy"
-                        className="w-20 h-20 rounded-full object-cover relative z-10 border-2 border-gray-700"
-                      />
-                    )}
+  const maxSalary = filteredEmployees.reduce(
+    (max: number, employee: any) => Math.max(max, Number(employee.salary || 0)),
+    0,
+  );
 
-                    <div>
-                      <p className="font-medium text-white group-hover:text-teal-400 transition-colors">
-                        {employee.name}
-                      </p>
-                      <p className="text-sm text-gray-400 sm:hidden">
-                        {employee.department}
-                      </p>
-                    </div>
-                  </div>
-                </td>
-                <td className="px-6 py-4 hidden sm:table-cell">
-                  <span className="text-gray-300">{employee.department}</span>
-                </td>
-                <td className="px-6 py-4 hidden lg:table-cell">
-                  <span className="text-gray-400 text-sm">
-                    {employee.email}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right">
-                  <span className="text-white font-semibold">
-                    ${employee.salary.toLocaleString()}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-right hidden xl:table-cell">
-                  <span className="text-gray-400 text-sm">
-                    {formatDate(employee.joinDate)}
-                  </span>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+  return (
+    <div className="table-card" role="table" aria-label="Employees">
+      <div className="table-header" role="row">
+        <div className="table-header-cell" role="columnheader">Employee</div>
+        <div className="table-header-cell" role="columnheader">Department</div>
+        <div className="table-header-cell" role="columnheader">Email</div>
+        <div className="table-header-cell" role="columnheader">Salary</div>
+        <div className="table-header-cell" role="columnheader">Joined</div>
       </div>
+
+      {filteredEmployees?.map((employee: any) => {
+        const salary = Number(employee.salary || 0);
+        const progress = maxSalary ? Math.min((salary / maxSalary) * 100, 100) : 0;
+
+        return (
+          <Link
+            key={employee.id}
+            href={`/admin-employees/${employee.id}`}
+            className="table-row"
+            role="row"
+            aria-label={`View ${employee.name}`}
+          >
+            <div className="table-cell" role="cell">
+              <div className="employee-wrap">
+                {employee?.profile_image ? (
+                  <Image
+                    src={employee.profile_image}
+                    alt=""
+                    width={36}
+                    height={36}
+                    className="employee-avatar"
+                    sizes="36px"
+                  />
+                ) : (
+                  <div className="employee-avatar avatar-initials" style={avatarPalette(employee.name)}>
+                    {employee.name?.split(" ").map((part: string) => part[0]).slice(0, 2).join("").toUpperCase()}
+                  </div>
+                )}
+                <div className="employee-copy">
+                  <p className="employee-name">{employee.name}</p>
+                  <p className="employee-email mobile-email">{employee.email}</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="table-cell department-cell" role="cell">
+              <span className="department-pill">
+                <span className="dot" style={{ backgroundColor: departmentColor(employee.department) }} />
+                {employee.department || "N/A"}
+              </span>
+            </div>
+
+            <div className="table-cell email-cell" role="cell">
+              <span className="employee-email">{employee.email || "N/A"}</span>
+            </div>
+
+            <div className="table-cell salary-cell" role="cell">
+              <div className="salary-block">
+                <div className="progress-bar" aria-label={`${employee.name} salary bar`}>
+                  <div className="progress-fill" style={{ width: `${progress}%` }} />
+                </div>
+                <span className="salary-value">
+                  ${salary.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                </span>
+              </div>
+            </div>
+
+            <div className="table-cell joined-cell" role="cell">{formatDate(employee?.created_at) || "N/A"}</div>
+          </Link>
+        );
+      })}
     </div>
   );
 };

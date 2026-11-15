@@ -3,8 +3,8 @@
   email: string;
   department: string;
   salary: number;
-  employee_image : any,
-  employee_file : any
+  employee_image: FileList | null;
+  employee_file: FileList | null;
 };
 
 

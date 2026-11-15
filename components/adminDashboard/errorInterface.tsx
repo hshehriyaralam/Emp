@@ -1,23 +1,25 @@
-import React from 'react'
+import React from "react";
+import { AlertCircle } from "lucide-react";
 
-const ErrorInterface = () => {
-  return (
-    
-           <div className="min-h-screen bg-[#0a0a0a] font-quicksand flex items-center justify-center p-4">
-        <div className="bg-gradient-to-br from-red-500/10 to-red-600/5 border border-red-500/20 rounded-2xl p-8 max-w-md w-full text-center backdrop-blur-sm">
-          <div className="text-6xl mb-4">⚠️</div>
-          <h3 className="text-red-400 text-xl font-semibold mb-2">Failed to Load Data</h3>
-          <p className="text-gray-400 mb-6">We couldn't fetch your employee data. Please try again.</p>
-          <button 
-            onClick={() => window.location.reload()} 
-            className="px-6 py-2 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-xl transition-colors  cursor-pointer"
-          >
-            Retry
-          </button>
-        </div>
+const ErrorInterface = () => (
+  <div className="flex min-h-[50vh] items-center justify-center p-4">
+    <div className="w-full max-w-md rounded-[16px] border border-[var(--border)] bg-[var(--surface)] p-8 text-center">
+      <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-[var(--danger-bg)] text-[var(--danger-text)]">
+        <AlertCircle className="h-7 w-7" aria-hidden="true" />
       </div>
+      <h3 className="text-xl font-semibold text-[var(--text)]">Failed to Load Data</h3>
+      <p className="mb-6 mt-2 text-sm leading-6 text-[var(--text-muted)]">
+        We couldn&apos;t fetch your employee data. Please try again.
+      </p>
+      <button
+        type="button"
+        onClick={() => window.location.reload()}
+        className="min-h-11 rounded-full bg-[var(--danger-solid)] px-6 py-2 text-sm font-medium text-[var(--on-primary)] transition-colors hover:brightness-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[var(--danger-text)]"
+      >
+        Retry
+      </button>
+    </div>
+  </div>
+);
 
-  )
-}
-
-export default ErrorInterface
+export default ErrorInterface;

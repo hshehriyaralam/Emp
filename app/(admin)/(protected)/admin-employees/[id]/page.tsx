@@ -6,7 +6,7 @@ import { useGetAllEmployeesQuery } from "@/store/employeeApi";
 import { useRouter } from "next/navigation";
 import { useAdminProfileQuery, useLogOutAdminMutation, useUpdateProfileImgMutation } from "@/store/admin";
 import dynamic from "next/dynamic";
-const Header = dynamic(() => import("@/components/common/header"));
+import AppShell from "@/components/common/appShell";
 const EmployeeCard = dynamic(() => import("@/components/adminEmployees/employeCard"));
 const DeleteModal = dynamic(() => import("@/components/adminDashboard/delelteModal"));
 const UpdateModal = dynamic(() => import("@/components/adminDashboard/updateModal"));
@@ -37,28 +37,35 @@ const EmployeeDetails = () => {
   
 
   useEffect(() => {
-  if (!isLoading && employees && !employee && !redirected.current) {
+  if (!isLoading && !error && employees && !employee && !redirected.current) {
     redirected.current = true;
     router.replace("/admin-dashboard");
   }
-}, [employee, employees, isLoading, router]);
-  if (isLoading || isDeleting) return <LoadingEmployee />;
+}, [employee, employees, error, isLoading, router]);
+  if (isLoading || isDeleting) {
+    return (
+      <AppShell Profile={Profile} logOutUser={logOutUser} navigate="/admin-login" updateProfileImg={updateProfileImg} isAdmin>
+        <LoadingEmployee />
+      </AppShell>
+    );
+  }
+  if (error) {
+    return (
+      <AppShell Profile={Profile} logOutUser={logOutUser} navigate="/admin-login" updateProfileImg={updateProfileImg} isAdmin>
+        <ErrorHandler />
+      </AppShell>
+    );
+  }
   if (!employee) return null;
-  if (error) return <ErrorHandler />;
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] via-[#0d0d0d] to-[#0a0a0a] font-quicksand">
-      <Header
-      Profile={Profile}
-      logOutUser={logOutUser}
-      navigate={'/admin-login'}
-      updateProfileImg={updateProfileImg}
-      isAdmin={true}/>
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <AppShell Profile={Profile} logOutUser={logOutUser} navigate="/admin-login" updateProfileImg={updateProfileImg} isAdmin>
+      <div className="mx-auto max-w-7xl">
         <Link
           href="/admin-dashboard"
-          className="inline-flex items-center gap-2 text-gray-400 hover:text-teal-400 transition-all group mb-4"
+          className="mb-4 inline-flex min-h-11 items-center gap-2 text-sm font-medium text-[var(--text-muted)] hover:text-[var(--primary)]"
         >
-          <span className="font-medium">Back to Dashboard</span>
+          <span aria-hidden="true">‹</span>
+          <span>Employees</span>
         </Link>
         <EmployeeCard
           employee={employee}
@@ -66,7 +73,7 @@ const EmployeeDetails = () => {
           setIsEditModal={setIsEditModal}
           setIsDeleteModalOpen={setIsDeleteModalOpen}
         />
-      </main>
+      </div>
       {isDeleteModalOpen && (
         <DeleteModal
           setIsDeleting={setIsDeleting}
@@ -81,7 +88,7 @@ const EmployeeDetails = () => {
           employee={selectedEmployee}
         />
       )}
-    </div>
+    </AppShell>
   );
 };
 

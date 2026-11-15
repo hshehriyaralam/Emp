@@ -1,3 +1,5 @@
+"use client";
+
 import {
   User,
   Briefcase,
@@ -12,272 +14,147 @@ import {
   FileText,
   Download,
 } from "lucide-react";
-import Header from "../common/header";
 import { Button } from "../ui/button";
 import Image from "next/image";
 import CreateEmployeeReq from "./createEmployeeReq";
 import { useAddEmployeeReqMutation } from "@/store/employeeApi";
 import { formatDate } from "../common/formatDate";
-import { useUpdateEmployeeProfileImgMutation } from "@/store/employeeProfile";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { handleDownload } from "@/hooks/fileDownload";
+
+const requestStatusStyles: Record<string, { icon: typeof Clock; className: string }> = {
+  Pending: { icon: Clock, className: "request-status-pending" },
+  Approved: { icon: CheckCircle, className: "request-status-approved" },
+  Rejected: { icon: XCircle, className: "request-status-rejected" },
+};
 
 const RequestCard = ({
   employeeReq,
   Profile,
-  logOutUser,
   setIsModalOpen,
   isModalOpen,
 }: any) => {
   const requestStatus = employeeReq?.status || null;
   const [addEmployeeReq, { isLoading: Adding }] = useAddEmployeeReqMutation();
-  const [updateEmployeeProfileImg] = useUpdateEmployeeProfileImgMutation();
-
-  const statusMap: any = {
-    Pending: {
-      icon: Clock,
-      color: "text-yellow-400",
-      bg: "bg-yellow-500/10",
-      border: "border-yellow-500/20",
-      dotColor: "bg-yellow-400",
-    },
-    Approved: {
-      icon: CheckCircle,
-      color: "text-green-400",
-      bg: "bg-green-500/10",
-      border: "border-green-500/20",
-      dotColor: "bg-green-400",
-    },
-    Rejected: {
-      icon: XCircle,
-      color: "text-red-400",
-      bg: "bg-red-500/10",
-      border: "border-red-500/20",
-      dotColor: "bg-red-400",
-    },
-  };
-
-  const statusInfo = requestStatus ? statusMap[requestStatus] : null;
-  const StatusIcon = statusInfo?.icon || null;
+  const statusInfo = requestStatus ? requestStatusStyles[requestStatus] : null;
+  const StatusIcon = statusInfo?.icon;
+  const employeeName = employeeReq?.name || "Employee";
+  const firstName = employeeName.split(" ")[0];
+  const salary = Number(employeeReq?.salary || 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  });
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-[#0a0a0a] via-[#0d0d0d] to-[#0a0a0a] font-quicksand">
-      <Header
-        Profile={Profile}
-        logOutUser={logOutUser}
-        navigate={"/login"}
-        updateProfileImg={updateEmployeeProfileImg}
-        isAdmin={false}
-      />
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {requestStatus !== "Pending" &&
-          requestStatus !== "Approved" &&
-          requestStatus !== "Rejected" && (
-            <Button
-              onClick={() => setIsModalOpen(true)}
-              className=" flex items-center gap-2 h-[52px] font-semibold px-6 rounded-xl transition-all hover:scale-105 shadow-lg shadow-teal-500/20 hover:shadow-teal-500/40 cursor-pointer mb-6"
-            >
-              <Plus className="w-4 h-4" />
-              <span className="hidden sm:inline">Add Employee</span>
-              <span className="sm:hidden">Add</span>
-            </Button>
-          )}
-
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-teal-400 to-teal-600 bg-clip-text text-transparent">
-            Welcome back, {employeeReq?.name || "Employee"}
-          </h1>
-          <p className="text-gray-400 mt-1">Here's your profile overview</p>
-        </div>
-
-        {statusInfo && (
-          <div
-            className={`mb-6 p-5 rounded-2xl border ${statusInfo.border} ${statusInfo.bg}`}
+    <div className="mx-auto max-w-7xl">
+      {requestStatus !== "Pending" &&
+        requestStatus !== "Approved" &&
+        requestStatus !== "Rejected" && (
+          <Button
+            onClick={() => setIsModalOpen(true)}
+            className="mb-6 flex h-11 cursor-pointer items-center gap-2 rounded-full bg-[var(--primary)] px-6 font-semibold text-[var(--on-primary)] hover:bg-[var(--primary-hover)]"
           >
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="flex items-center gap-3">
-                <div
-                  className={`p-2 rounded-xl ${statusInfo.bg} border ${statusInfo.border}`}
-                >
-                  <StatusIcon className={`w-6 h-6 ${statusInfo.color}`} />
-                </div>
-                <div>
-                  <p className="text-sm text-gray-400">Request Status</p>
-                </div>
-              </div>
-            </div>
-          </div>
+            <Plus className="h-4 w-4" />
+            <span>Add Employee</span>
+          </Button>
         )}
 
-        {/* <iframe
-          src={`${employeeReq.employee_file}#toolbar=0&navpanes=0&scrollbar=0`}
-          className="h-[400px]  my-6 border border-gray-100  text-white"
-          title="PDF Document Viewer"
-        />
+      <header className="mb-6">
+        <h1 className="page-title">Hello, {firstName}</h1>
+        <p className="page-subtitle">Here&apos;s your profile overview</p>
+      </header>
 
-        <Button
-          onClick={() => handleDownload(employeeReq.employee_file)}
-          className="w-42 mb-10 h-12 bg-teal-800  hover:bg-teal-600  text-white px-4 py-4 rounded  cursor-pointer  "
-        >
-          Download Document
-        </Button> */}
-
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div className="lg:col-span-2 bg-gradient-to-br from-[#1a1a1a] to-[#121212] rounded-2xl border border-gray-800/50 p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <User className="w-5 h-5 text-teal-400" />
-              Profile Details
-            </h3>
-            <div className="space-y-3">
-              {[
-                { icon: User, label: "Full Name", value: employeeReq?.name },
-                { icon: Mail, label: "Email", value: employeeReq?.email },
-                {
-                  icon: Building2,
-                  label: "Department",
-                  value: employeeReq?.department,
-                },
-                {
-                  icon: Briefcase,
-                  label: "Salary",
-                  value: `$${employeeReq?.salary?.toLocaleString()}`,
-                },
-                {
-                  icon: Calendar,
-                  label: "Submitted On",
-                  value: formatDate(employeeReq?.created_at),
-                },
-              ].map((item, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-3 p-3 bg-[#0a0a0a] rounded-xl border border-gray-800/50 hover:border-teal-500/30 transition-all duration-300"
-                >
-                  <div className="p-2 bg-teal-500/10 rounded-lg">
-                    <item.icon className="w-4 h-4 text-teal-400" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500">{item.label}</p>
-                    <p className="text-sm text-gray-200 font-medium">
-                      {item.value || "N/A"}
-                    </p>
-                  </div>
-                </div>
-              ))}
-            </div>
+      {statusInfo && StatusIcon && (
+        <section className={`request-status-banner ${statusInfo.className}`} role="status">
+          <div className="request-status-copy">
+            <span className="request-status-icon">
+              <StatusIcon size={20} aria-hidden="true" />
+            </span>
+            <span>
+              <strong>Request Status</strong>
+              <small>Your request status is {requestStatus?.toLowerCase()}.</small>
+            </span>
           </div>
+          <span className="status-badge">{requestStatus}</span>
+        </section>
+      )}
 
-          <div className="bg-gradient-to-br from-[#1a1a1a] to-[#121212] rounded-2xl border border-gray-800/50 p-6">
-            <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-              <AlertCircle className="w-5 h-5 text-teal-400" />
-              Account Status
-            </h3>
-
-            <div className="space-y-4">
-              <div className="flex flex-col items-center text-center p-4 bg-[#0a0a0a] rounded-xl border border-gray-800/50">
-                <div className="relative">
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-teal-600 to-teal-800 flex items-center justify-center overflow-hidden">
-                    {employeeReq?.profile_image ? (
-                      <Image
-                        src={employeeReq.profile_image}
-                        alt="profile"
-                        width={96}
-                        height={96}
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="text-3xl font-bold text-white">
-                        {employeeReq?.name?.charAt(0) || "U"}
-                      </span>
-                    )}
-                  </div>
-                  {statusInfo && (
-                    <div
-                      className={`absolute -bottom-1 -right-1 p-1.5 rounded-full ${statusInfo.bg} border-2 border-[#1a1a1a]`}
-                    >
-                      <StatusIcon className={`w-4 h-4 ${statusInfo.color}`} />
-                    </div>
-                  )}
-                </div>
-                <p className="text-sm font-medium text-white mt-3">
-                  {employeeReq?.name || "N/A"}
-                </p>
-                <p className="text-xs text-gray-400">
-                  {employeeReq?.email || "N/A"}
-                </p>
+      <div className="employee-dashboard-grid">
+        <section className="employee-info-card">
+          <h2>Profile Details</h2>
+          <div className="employee-info-rows">
+            {[
+              { icon: User, label: "Full Name", value: employeeReq?.name },
+              { icon: Mail, label: "Email", value: employeeReq?.email },
+              { icon: Building2, label: "Department", value: employeeReq?.department },
+              { icon: Briefcase, label: "Salary", value: `$${salary}` },
+              { icon: Calendar, label: "Submitted On", value: formatDate(employeeReq?.created_at) },
+            ].map((item) => (
+              <div key={item.label} className="employee-info-row">
+                <span>{item.label}</span>
+                <strong>{item.value || "N/A"}</strong>
               </div>
+            ))}
+          </div>
+        </section>
 
-              <div className="space-y-2">
-                {[
-                  { label: "Department", value: employeeReq?.department },
-                  {
-                    label: "Salary",
-                    value: `$${employeeReq?.salary?.toLocaleString()}`,
-                  },
-                  { label: "Status", value: statusInfo?.label, isStatus: true },
-                ].map((item, idx) => (
-                  <div
-                    key={idx}
-                    className="flex items-center justify-between p-3 bg-[#0a0a0a] rounded-xl border border-gray-800/50"
-                  >
-                    <span className="text-sm text-gray-400">{item.label}</span>
-                    <span
-                      className={`text-sm font-medium ${item.isStatus ? statusInfo?.color : "text-white"}`}
-                    >
-                      {item.isStatus ? (
-                        <span className="flex items-center gap-1.5">
-                          {statusInfo && <StatusIcon className="w-3.5 h-3.5" />}
-                          {item.value}
-                        </span>
-                      ) : (
-                        item.value || "N/A"
-                      )}
-                    </span>
-                  </div>
-                ))}
+        <section className="employee-info-card">
+          <h2><AlertCircle size={18} aria-hidden="true" /> Account Status</h2>
+          <div className="employee-account">
+            <div className="employee-account-summary">
+              <Image
+                src={employeeReq?.profile_image || "/userAvatar.png"}
+                alt=""
+                width={84}
+                height={84}
+                className="employee-account-avatar"
+                sizes="84px"
+              />
+              <strong>{employeeReq?.name || "N/A"}</strong>
+              <span>{employeeReq?.email || "N/A"}</span>
+            </div>
+            <div className="employee-account-rows">
+              <div><span>Department</span><strong>{employeeReq?.department || "N/A"}</strong></div>
+              <div><span>Salary</span><strong>${salary}</strong></div>
+              <div>
+                <span>Status</span>
+                {requestStatus && (
+                  <strong className={`status-badge ${statusInfo?.className}`}>
+                    {requestStatus}
+                  </strong>
+                )}
               </div>
             </div>
           </div>
-        </div>
+        </section>
+      </div>
 
-
-
-         {employeeReq.employee_file && (
-                <div className="mt-6 overflow-hidden rounded-2xl border border-gray-800 bg-[#0a0a0a]">
-                  <div className="flex flex-col gap-4 border-b border-gray-800 p-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-teal-500/10 border border-teal-500/20">
-                        <FileText className="h-5 w-5 text-teal-400" />
-                      </div>
-
-                      <div>
-                        <h3 className="text-sm font-semibold text-white">
-                          Employee Document
-                        </h3>
-                        <p className="text-xs text-gray-400">
-                          Preview the uploaded document or download it.
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      onClick={() => handleDownload(employeeReq.employee_file)}
-                      className="flex items-center gap-2 bg-teal-600 text-white
-                       hover:bg-teal-500   cursor-pointer"
-                    >
-                      <Download className="h-4 w-4" />
-                      Download
-                    </Button>
-                  </div>
-                  <div className="p-4">
-                    <iframe
-                      src={`${employeeReq.employee_file}#toolbar=0&navpanes=0&scrollbar=0`}
-                      title="Employee Document"
-                      className="w-full max-w-[320px] h-[200px] rounded-lg border border-gray-700 bg-white"
-                    />
-                  </div>
-                </div>
-              )}
-      </main>
+      {employeeReq.employee_file && (
+        <section className="document-card mt-6">
+          <div className="document-header">
+            <div className="document-heading">
+              <span className="document-icon"><FileText size={18} aria-hidden="true" /></span>
+              <span>
+                <strong>Employee Document</strong>
+                <small>Preview the uploaded document or download it.</small>
+              </span>
+            </div>
+            <Button
+              onClick={() => handleDownload(employeeReq.employee_file)}
+              className="flex h-10 cursor-pointer items-center gap-2 rounded-full border border-[var(--border)] bg-[var(--surface)] px-4 text-[var(--text)] hover:bg-[var(--surface-2)]"
+            >
+              <Download className="h-4 w-4" />
+              Download
+            </Button>
+          </div>
+          <div className="document-preview">
+            <iframe
+              src={`${employeeReq.employee_file}#toolbar=0&navpanes=0&scrollbar=0`}
+              title="Employee Document"
+            />
+          </div>
+        </section>
+      )}
 
       {isModalOpen && (
         <CreateEmployeeReq
@@ -291,4 +168,4 @@ const RequestCard = ({
   );
 };
 
-export default  React.memo(RequestCard) ;
+export default React.memo(RequestCard);

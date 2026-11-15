@@ -1,74 +1,63 @@
 "use client"
-import {
-  LogOutIcon,
-  ChevronRightIcon,
-} from "lucide-react";
+import { LogOutIcon, ChevronRightIcon } from "lucide-react";
 import { formatDate } from "../common/formatDate";
 import { Button } from "../ui/button";
 
-
-const UserDetails = ({userData,logOut}:any) => {
-
+const UserDetails = ({ userData, logOut }: any) => {
   return (
     <>
       <div className="space-y-4">
-                  <div className="bg-[#0a0a0a] rounded-xl p-4 border border-gray-800/50 hover:border-teal-500/30 transition-all duration-300">
-                    <div className="flex items-center gap-3">
-                      
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500 uppercase tracking-wider font-quicksand">Full Name</p>
-                        <p className="text-sm text-gray-200 font-medium truncate font-quicksand">{userData?.name || 'N/A'}</p>
-                      </div>
-                    </div>
-                  </div>
-    
-                  <div className="bg-[#0a0a0a] rounded-xl p-4 border border-gray-800/50 hover:border-teal-500/30 transition-all duration-300">
-                    <div className="flex items-center gap-3">
-                     
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500 uppercase tracking-wider font-quicksand">Email Address</p>
-                        <p className="text-sm text-gray-200 font-medium truncate font-quicksand">{userData?.email || 'N/A'}</p>
-                      </div>
-                    </div>
-                  </div>
-    
-                  <div className="bg-[#0a0a0a] rounded-xl p-4 border border-gray-800/50 hover:border-teal-500/30 transition-all duration-300">
-                    <div className="flex items-center gap-3">
-                    
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs text-gray-500 uppercase tracking-wider font-quicksand">Joined Date</p>
-                        <p className="text-sm text-gray-200 font-medium truncate font-quicksand">
-                          {formatDate(userData?.created_at || userData?.joinDate)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-    
-                  {userData?.department && (
-                    <div className="bg-[#0a0a0a] rounded-xl p-4 border border-gray-800/50 hover:border-teal-500/30 transition-all duration-300">
-                      <div className="flex items-center gap-3">
-                       
-                        <div className="flex-1 min-w-0">
-                          <p className="text-xs text-gray-500 uppercase tracking-wider font-quicksand">Department</p>
-                          <p className="text-sm text-gray-200 font-medium truncate font-quicksand">{userData.department}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-    
-                
-                </div>
-                <div className="my-6 border-t border-gray-800/50"></div>
-                <Button
-                  onClick={logOut}
-                  className="w-full h-12 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold rounded-xl transition-all hover:scale-[1.02] shadow-lg shadow-red-500/30 hover:shadow-red-500/40 flex items-center justify-center gap-2 cursor-pointer group font-quicksand"
-                >
-                  <LogOutIcon className="w-4 h-4 group-hover:rotate-12 transition-transform flex-shrink-0" />
-                  <span>Logout</span>
-                  <ChevronRightIcon className="w-4 h-4 group-hover:translate-x-1 transition-transform flex-shrink-0" />
-                </Button>
-    </>
-  )
-}
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4 transition-colors duration-150 hover:border-[var(--accent)]">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--text-muted)]">Full Name</p>
+              <p className="truncate text-sm font-medium text-[var(--text)]">{userData?.name || "N/A"}</p>
+            </div>
+          </div>
+        </div>
 
-export default UserDetails
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4 transition-colors duration-150 hover:border-[var(--accent)]">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--text-muted)]">Email Address</p>
+              <p className="truncate text-sm font-medium text-[var(--text)]">{userData?.email || "N/A"}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4 transition-colors duration-150 hover:border-[var(--accent)]">
+          <div className="flex items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--text-muted)]">Joined Date</p>
+              <p className="truncate text-sm font-medium text-[var(--text)]">{formatDate(userData?.created_at || userData?.joinDate)}</p>
+            </div>
+          </div>
+        </div>
+
+        {userData?.department && (
+          <div className="rounded-xl border border-[var(--border)] bg-[var(--surface-2)] p-4 transition-colors duration-150 hover:border-[var(--accent)]">
+            <div className="flex items-center gap-3">
+              <div className="min-w-0 flex-1">
+                <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-[var(--text-muted)]">Department</p>
+                <p className="truncate text-sm font-medium text-[var(--text)]">{userData.department}</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <div className="my-6 border-t border-[var(--border)]" />
+
+      <Button
+        onClick={logOut}
+        className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--danger-bg)] font-semibold text-[var(--danger-text)] transition-colors "
+      >
+        <LogOutIcon className="h-4 w-4 transition-transform group-hover:rotate-12" />
+        <span>Logout</span>
+        <ChevronRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+      </Button>
+    </>
+  );
+};
+
+export default UserDetails;

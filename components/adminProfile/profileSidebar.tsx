@@ -1,8 +1,7 @@
 "use client";
-import { MailIcon, XIcon, CameraIcon, CheckIcon, Camera } from "lucide-react";
+import { MailIcon, XIcon, CheckIcon, Camera } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { useUpdateProfileImgMutation } from "@/store/admin";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { forwardRef, useState, useRef } from "react";
@@ -10,18 +9,7 @@ import { ProfileSidebarProps } from "@/types/employee";
 import UserDetails from "./userDetails";
 
 export const ProfileSidebar = forwardRef<HTMLDivElement, ProfileSidebarProps>(
-  (
-    {
-      isOpen,
-      onClose,
-      userData,
-      initials,
-      logOutUser,
-      navigate,
-      updateProfileImg,
-    },
-    ref,
-  ) => {
+  ({ isOpen, onClose, userData, initials, logOutUser, navigate, updateProfileImg }, ref) => {
     const router = useRouter();
     const [imagePreview, setImagePreview] = useState<string | null>(null);
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -39,6 +27,7 @@ export const ProfileSidebar = forwardRef<HTMLDivElement, ProfileSidebarProps>(
         toast.error("Logout failed", { position: "top-center" });
       }
     };
+
     const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const file = e.target.files?.[0];
       if (!file) return;
@@ -68,14 +57,11 @@ export const ProfileSidebar = forwardRef<HTMLDivElement, ProfileSidebarProps>(
         const formData = new FormData();
         formData.append("profile_image", selectedFile);
         await updateProfileImg(formData).unwrap();
-        toast.success("Profile image updated successfully!", {
-          position: "top-center",
-        });
+        toast.success("Profile image updated successfully!", { position: "top-center" });
         setImagePreview(null);
         setSelectedFile(null);
         if (fileInputRef.current) fileInputRef.current.value = "";
         router.refresh();
-        setIsLoading(false);
       } catch (error: any) {
         toast.error(error?.data?.message || "Failed to update profile image");
       } finally {
@@ -92,108 +78,66 @@ export const ProfileSidebar = forwardRef<HTMLDivElement, ProfileSidebarProps>(
     return (
       <>
         {isOpen && (
-          <div
-            className="fixed inset-0 bg-black/60 backdrop-blur-sm"
-            style={{ zIndex: 99999 }}
+          <button
+            type="button"
+            className="profile-drawer-overlay"
             onClick={onClose}
+            aria-label="Close profile"
           />
         )}
 
         <div
           ref={ref}
-          className={`fixed top-0 right-0 h-full w-full
-             sm:w-[380px] md:w-[420px] bg-gradient-to-br 
-             from-[#1a1a1a] to-[#0f0f0f] border-l border-gray-800/80 
-             shadow-2xl shadow-teal-500/10 transition-transform duration-300
-              ease-out font-quicksand   ${
-                isOpen ? "translate-x-0" : "translate-x-full"
-              }`}
-          style={{
-            zIndex: 99999,
-            display: "flex",
-            flexDirection: "column",
-            height: "100vh",
-            maxHeight: "100vh",
-          }}
+          role="dialog"
+          aria-modal={isOpen ? "true" : undefined}
+          aria-label="Profile"
+          aria-hidden={!isOpen}
+          inert={!isOpen}
+          tabIndex={-1}
+          className={`profile-drawer fixed right-0 top-0 h-full w-full sm:w-[400px] transition-transform duration-150 ease-out ${isOpen ? "translate-x-0" : "translate-x-full"}`}
+          style={{ display: "flex", flexDirection: "column", height: "100dvh", maxHeight: "100dvh" }}
         >
-          <div className="flex-shrink-0 flex items-center justify-between p-4 border-b border-gray-800/50 bg-[#0f0f0f]/95 backdrop-blur-sm  overflow-y-hidden">
+          <div className="flex flex-shrink-0 items-center justify-between border-b border-[var(--border)] bg-[var(--surface)] p-4">
             <div className="flex items-center gap-2">
-              <h2 className="text-lg font-semibold text-white font-quicksand">
-                Profile
-              </h2>
+              <h2 className="text-lg font-semibold text-[var(--text)]">Profile</h2>
             </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="rounded-full hover:bg-teal-500/10 transition-colors cursor-pointer flex-shrink-0"
-              onClick={onClose}
-              aria-label="Close profile"
-            >
-              <XIcon className="w-5 h-5 text-gray-400 hover:text-white transition-colors" />
+            <Button variant="ghost" size="icon" className="flex-shrink-0 cursor-pointer rounded-full hover:bg-[var(--surface-2)]" onClick={onClose} aria-label="Close profile">
+              <XIcon className="h-5 w-5 text-[var(--text-muted)]" />
             </Button>
           </div>
 
-          <div className="flex-1 overflow-y-auto p-6 pb-8 font-quicksand   overflow-hidden">
-            <div className="flex flex-col items-center text-center mb-8">
+          <div className="flex-1 overflow-y-auto p-6 pb-8">
+            <div className="mb-8 flex flex-col items-center text-center">
               <div className="relative flex flex-col items-center">
-                <div className="absolute inset-0 rounded-full bg-teal-500/20 blur-2xl opacity-0 hover:opacity-100 transition-opacity pointer-events-none -z-10" />
                 <div className="relative">
-                  <Avatar className="w-24 h-24 border-[3px] border-teal-500 shadow-lg shadow-teal-500/20 transition-all duration-300">
-                    <AvatarImage
-                      src={
-                        imagePreview ||
-                        userData?.profile_image ||
-                        "/userAvatar.png"
-                      }
-                      alt={userData?.name || "User"}
-                      loading="lazy"
-                    />
-                    <AvatarFallback className="bg-gradient-to-br from-teal-600 to-teal-800 text-white text-2xl font-bold">
-                      {initials}
-                    </AvatarFallback>
-
-                    <Camera className="w-6 h-6 text-gray-100 bg-yellow-500" />
+                  <Avatar className="h-24 w-24 border-[3px] border-[var(--primary)]">
+                    <AvatarImage src={imagePreview || userData?.profile_image || "/userAvatar.png"} alt={userData?.name || "User"} loading="lazy" />
+                    <AvatarFallback className="bg-[var(--primary-soft)] text-2xl font-bold text-[var(--primary)]">{initials}</AvatarFallback>
+                    <Camera className="absolute bottom-0 right-0 h-7 w-7 rounded-full border-2 border-[var(--surface)] bg-[var(--primary-soft)] p-1.5 text-[var(--primary)]" />
                   </Avatar>
 
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    className="hidden"
-                    onChange={handleImageChange}
-                  />
+                  <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleImageChange} />
                 </div>
 
-                <h3 className="mt-4 text-xl font-semibold text-white">
-                  {userData?.name || "User Name"}
-                </h3>
+                <h3 className="mt-4 text-xl font-semibold text-[var(--text)]">{userData?.name || "User Name"}</h3>
 
-                <p className="text-sm text-gray-400 flex items-center gap-1 mt-1">
-                  <MailIcon className="w-3.5 h-3.5" />
+                <p className="mt-1 flex items-center gap-1 text-sm text-[var(--text-muted)]">
+                  <MailIcon className="h-3.5 w-3.5" />
                   {userData?.email}
                 </p>
 
                 {imagePreview && (
-                  <div className="mt-5 flex gap-3 w-full max-w-xs z-50 relative">
-                    <Button
-                      type="button"
-                      onClick={handleCancelImage}
-                      className="flex-1 h-10 bg-gray-700 hover:bg-gray-600 text-white rounded-lg cursor-pointer"
-                    >
+                  <div className="relative z-50 mt-5 flex w-full max-w-xs gap-3">
+                    <Button type="button" onClick={handleCancelImage} className="h-10 flex-1 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)] hover:bg-[var(--surface-2)]">
                       Cancel
                     </Button>
 
-                    <Button
-                      type="button"
-                      onClick={handleSaveImage}
-                      disabled={isLoading}
-                      className="flex-1 h-10  bg-teal-900 rounded-lg cursor-pointer"
-                    >
+                    <Button type="button" onClick={handleSaveImage} disabled={isLoading} className="h-10 flex-1 rounded-lg bg-[var(--primary)] text-[var(--on-primary)] hover:bg-[var(--primary-hover)]">
                       {isLoading ? (
-                        <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--on-primary-muted)] border-t-[var(--on-primary)]" />
                       ) : (
                         <>
-                          <CheckIcon className="w-4 h-4 mr-1" />
+                          <CheckIcon className="mr-1 h-4 w-4" />
                           Save
                         </>
                       )}
@@ -202,6 +146,7 @@ export const ProfileSidebar = forwardRef<HTMLDivElement, ProfileSidebarProps>(
                 )}
               </div>
             </div>
+
             <UserDetails userData={userData} logOut={logOut} />
           </div>
         </div>
