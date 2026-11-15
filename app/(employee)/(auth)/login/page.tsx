@@ -14,6 +14,7 @@ const [loginEmployee] = useLoginEmployeeMutation()
   navigation={'/employee-dashboard'}
   singUpLink={'/register'}
   heading={'Employee'}
+  adminLoginLink={'/admin-login'}
   />
   
  </div>

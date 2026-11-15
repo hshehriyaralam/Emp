@@ -12,7 +12,8 @@ const LoginForm = ({
  loginUser,
 navigation,
 singUpLink,
-heading
+heading,
+adminLoginLink
 }:any) => {
 
   const [showPassword, setShowPassword] = useState(false);
@@ -129,6 +130,14 @@ heading
                   Create one
                 </Link>
               </p>
+              {adminLoginLink && (
+                <p className="mt-3 text-sm text-[var(--text-muted)]">
+                  Admin?{" "}
+                  <Link href={adminLoginLink} className="font-medium text-[var(--primary)] underline-offset-2 hover:underline">
+                    Sign in here
+                  </Link>
+                </p>
+              )}
             </div>
           </form>
         </div>

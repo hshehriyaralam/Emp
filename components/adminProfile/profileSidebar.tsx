@@ -1,5 +1,5 @@
 "use client";
-import { MailIcon, XIcon, CheckIcon, Camera } from "lucide-react";
+import { MailIcon, XIcon, CheckIcon, Camera, LogOutIcon, ChevronRightIcon } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useRouter } from "next/navigation";
@@ -106,8 +106,8 @@ export const ProfileSidebar = forwardRef<HTMLDivElement, ProfileSidebarProps>(
             </Button>
           </div>
 
-          <div className="profile-drawer-scroll flex-1 overflow-y-auto p-6 pb-8">
-            <div className="mb-8 flex flex-col items-center text-center">
+          <div className="profile-drawer-scroll min-h-0 flex-1 overflow-y-auto px-6 pb-3 pt-4">
+            <div className="mb-3 flex flex-col items-center text-center">
               <div className="relative flex flex-col items-center">
                 <div className="relative">
                   <button
@@ -155,7 +155,18 @@ export const ProfileSidebar = forwardRef<HTMLDivElement, ProfileSidebarProps>(
               </div>
             </div>
 
-            <UserDetails userData={userData} logOut={logOut} />
+            <UserDetails userData={userData} />
+          </div>
+
+          <div className="flex-shrink-0 border-t border-[var(--border)] bg-[var(--surface)] p-6 pt-4">
+            <Button
+              onClick={logOut}
+              className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--danger-bg)] font-semibold text-[var(--danger-text)] transition-colors"
+            >
+              <LogOutIcon className="h-4 w-4 transition-transform group-hover:rotate-12" />
+              <span>Logout</span>
+              <ChevronRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+            </Button>
           </div>
         </div>
       </>

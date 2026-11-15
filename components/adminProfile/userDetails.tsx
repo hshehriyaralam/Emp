@@ -1,9 +1,6 @@
-"use client"
-import { LogOutIcon, ChevronRightIcon } from "lucide-react";
 import { formatDate } from "../common/formatDate";
-import { Button } from "../ui/button";
 
-const UserDetails = ({ userData, logOut }: any) => {
+const UserDetails = ({ userData }: any) => {
   return (
     <>
       <div className="space-y-4">
@@ -46,16 +43,6 @@ const UserDetails = ({ userData, logOut }: any) => {
         )}
       </div>
 
-      <div className="my-6 border-t border-[var(--border)]" />
-
-      <Button
-        onClick={logOut}
-        className="flex h-12 w-full cursor-pointer items-center justify-center gap-2 rounded-xl bg-[var(--danger-bg)] font-semibold text-[var(--danger-text)] transition-colors "
-      >
-        <LogOutIcon className="h-4 w-4 transition-transform group-hover:rotate-12" />
-        <span>Logout</span>
-        <ChevronRightIcon className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-      </Button>
     </>
   );
 };
