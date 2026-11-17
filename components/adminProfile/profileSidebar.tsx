@@ -56,6 +56,7 @@ export const ProfileSidebar = forwardRef<HTMLDivElement, ProfileSidebarProps>(
         setIsLoading(true);
         const formData = new FormData();
         formData.append("profile_image", selectedFile);
+        console.log("FormData:", formData.get("profile_image")); 
         await updateProfileImg(formData).unwrap();
         toast.success("Profile image updated successfully!", { position: "top-center" });
         setImagePreview(null);
